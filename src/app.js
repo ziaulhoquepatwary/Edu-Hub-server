@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import ContactRoute from "./modules/contact/contact.route.js";
+import CourseRoute from "./modules/course/course.route.js";
+import RveiewRoute from "./modules/course/course.route.js";
 
 const createApp = (auth) => {
     const app = express();
@@ -19,6 +21,8 @@ const createApp = (auth) => {
     app.use(express.json());
 
     app.all("/api/auth/*splat", toNodeHandler(auth));
+    app.use("/api/course", CourseRoute);
+    app.use("/api/review/", RveiewRoute);
     app.use("/api/contact", ContactRoute);
 
     app.get("/", (req, res) => {
