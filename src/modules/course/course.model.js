@@ -83,7 +83,7 @@ const courseSchema = new mongoose.Schema(
                 values: ['Draft', 'Published', 'Archived'],
                 message: '{VALUE} is not a valid status'
             },
-            default: 'Draft'
+            default: 'Published'
         },
         certificateProvided: {
             type: Boolean,
@@ -103,5 +103,4 @@ const courseSchema = new mongoose.Schema(
 );
 
 const Course = mongoose.model('Course', courseSchema);
-
 export default Course;
