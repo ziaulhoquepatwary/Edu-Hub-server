@@ -16,7 +16,8 @@ export const createCourse = catchAsync(async (req, res) => {
 
     const newCourse = await Course.create({
         ...parsed.data,
-        status: "Published"
+        status: "Published",
+        ratingsAverage: 5,
     });
 
     return res.status(201).json({

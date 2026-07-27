@@ -26,6 +26,7 @@ export const verifyToken = async (req, res, next) => {
             name: session.user.name,
             email: session.user.email,
             role: session.user.role,
+            image: session.user.image,
         };
 
         next();

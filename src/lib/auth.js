@@ -26,7 +26,7 @@ export const createAuth = (db) => {
 
         session: {
             fields: {
-                user: ["role", "phone", "address"]
+                user: ["role", "image", "phone", "address"]
             }
         },
 
@@ -39,6 +39,10 @@ export const createAuth = (db) => {
                 phone: {
                     type: "string",
                     defaultValue: "",
+                },
+                image: {
+                    type: "string",
+                    default: "",
                 },
                 address: {
                     type: "string",

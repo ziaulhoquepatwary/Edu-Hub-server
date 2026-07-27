@@ -91,7 +91,7 @@ const courseSchema = new mongoose.Schema(
         },
         ratingsAverage: {
             type: Number,
-            default: 0,
+            default: 5,
             min: [0, 'Rating must be at least 0'],
             max: [5, 'Rating cannot be more than 5']
         }

@@ -82,5 +82,3 @@ export const createCourseZodSchema = z.object({
         .default(0)
         .optional()
 });
-
-export const updateCourseZodSchema = createCourseZodSchema.partial();
