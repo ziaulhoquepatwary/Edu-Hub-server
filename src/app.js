@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { toNodeHandler } from "better-auth/node";
 import ContactRoute from "./modules/contact/contact.route.js";
 import CourseRoute from "./modules/course/course.route.js";
-import RveiewRoute from "./modules/course/course.route.js";
+import RveiewRoute from "./modules/reviews/review.route.js";
 import BlogRoutes from "./modules/blog/blog.route.js";
 
 const createApp = (auth) => {
@@ -23,7 +23,7 @@ const createApp = (auth) => {
 
     app.all("/api/auth/*splat", toNodeHandler(auth));
     app.use("/api/course", CourseRoute);
-    app.use("/api/review/", RveiewRoute);
+    app.use("/api/reviews/", RveiewRoute);
     app.use("/api/contact", ContactRoute);
     app.use('/api/blogs', BlogRoutes);
 

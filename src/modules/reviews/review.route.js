@@ -1,8 +1,8 @@
 import express from "express";
 import { createReview, deleteReview, getCourseReviews, getHomePageReviews } from "./review.controller.js";
 import { verifyToken } from "../../middleware/authMiddleware.js";
-import protectRoute from "../../middleware/protectRoute";
-import { ROLES } from "../../utils/roles";
+import protectRoute from "../../middleware/protectRoute.js";
+import { ROLES } from "../../utils/roles.js";
 
 
 

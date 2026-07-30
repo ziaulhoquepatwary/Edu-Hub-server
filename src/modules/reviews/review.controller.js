@@ -83,13 +83,14 @@ export const deleteReview = catchAsync(async (req, res) => {
 });
 
 export const getHomePageReviews = catchAsync(async (req, res) => {
-    const HomePageReviews = await Review.find({ rating: 5 })
+    const homePageReviews = await Review.find({ rating: 5 })
+        .sort({ createdAt: 1 })
         .limit(8);
 
     res.status(200).json({
         success: true,
         message: "Home page reviews fetched successfully",
-        count: HomePageReviews.length,
-        data: HomePageReviews
+        count: homePageReviews.length,
+        data: homePageReviews
     });
 });
