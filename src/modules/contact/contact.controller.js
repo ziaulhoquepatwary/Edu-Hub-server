@@ -2,7 +2,9 @@ import nodemailer from "nodemailer";
 import catchAsync from "../../utils/catchAsync.js";
 
 const transporter = nodemailer.createTransport({
-    issue: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
         user: "mzh.mmrahman@gmail.com",
         pass: "llac ubms yymp nuzt" // App Password
@@ -10,9 +12,11 @@ const transporter = nodemailer.createTransport({
 });
 
 export const contactEmail = catchAsync(async (req, res) => {
-    const { name, email, issue, message } = req.body;
+    const { name, email, issueCategory, issue, message } = req.body;
 
-    if (!name || !email || !issue || !message) {
+    const selectedIssue = issueCategory || issue;
+
+    if (!name?.trim() || !email?.trim() || !selectedIssue || !message?.trim()) {
         return res.status(400).json({
             success: false,
             message: "Please fill in all required fields."
@@ -23,7 +27,7 @@ export const contactEmail = catchAsync(async (req, res) => {
         from: `"${name}" <mzh.mmrahman@gmail.com>`,
         replyTo: email,
         to: "mzh.mmrahman@gmail.com",
-        subject: `${issue.toUpperCase()} from ${name}`,
+        subject: `${selectedIssue.toUpperCase()} from ${name}`,
         html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f7f6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
@@ -40,7 +44,7 @@ export const contactEmail = catchAsync(async (req, res) => {
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">Requested issue:</td>
-              <td style="padding: 8px 0;"><span style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: bold;">${issue}</span></td>
+              <td style="padding: 8px 0;"><span style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: bold;">${selectedIssue}</span></td>
             </tr>
           </table>
 

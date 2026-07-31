@@ -55,7 +55,7 @@ export const getAllCourses = catchAsync(async (req, res) => {
     const limitNumber = Math.max(1, Number(limit));
     const skip = (pageNumber - 1) * limitNumber;
 
-    const sortOptions = {};
+    const sortOptions = { createdAt: -1 };
     sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
     const courses = await Course.find(query)
