@@ -37,3 +37,74 @@ export const confirmPayment = catchAsync(async (req, res) => {
         data: newEnrollment,
     });
 });
+
+export const getMyEnrolledCourses = catchAsync(async (req, res) => {
+    const userEmail = req.user.email;
+
+    const enrolledCourses = await Enrollment.aggregate([
+        {
+            $match: {
+                userEmail: userEmail,
+                paymentStatus: 'SUCCESS'
+            }
+        },
+        {
+            $addFields: {
+                courseObjectId: { $toObjectId: "$courseId" }
+            }
+        },
+        {
+            $lookup: {
+                from: "courses",
+                localField: "courseObjectId",
+                foreignField: "_id",
+                as: "courseDetails"
+            }
+        },
+        {
+            $unwind: "$courseDetails"
+        },
+        {
+            $project: {
+                // Enrollment Collection এর ফিল্ডসমূহ
+                _id: 1,
+                orderId: 1,
+                courseId: 1,
+                userEmail: 1,
+                userName: 1,
+                proofId: 1,
+                gateway: 1,
+                paymentStatus: 1,
+                isAccessGranted: 1,
+                createdAt: 1,
+
+                // Course Collection এর নির্দিষ্ট ফিল্ডসমূহ
+                "courseDetails._id": 1,
+                "courseDetails.title": 1,
+                "courseDetails.category": 1,
+                "courseDetails.image": 1,
+                "courseDetails.price": 1,
+                "courseDetails.duration": 1,
+                "courseDetails.tags": 1,
+                "courseDetails.level": 1,
+                "courseDetails.whatYouWillLearn": 1,
+                "courseDetails.certificateProvided": 1,
+                "courseDetails.ratingsAverage": 1
+            }
+        }
+    ]);
+
+    if (!enrolledCourses || enrolledCourses.length === 0) {
+        return res.status(200).json({
+            success: true,
+            message: "No enrolled courses found",
+            data: [],
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Enrolled courses retrieved successfully",
+        data: enrolledCourses,
+    });
+});
