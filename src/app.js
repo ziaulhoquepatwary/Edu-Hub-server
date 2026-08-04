@@ -6,6 +6,7 @@ import ContactRoute from "./modules/contact/contact.route.js";
 import CourseRoute from "./modules/course/course.route.js";
 import RveiewRoute from "./modules/reviews/review.route.js";
 import BlogRoutes from "./modules/blog/blog.route.js";
+import EnrollmentRoutes from "./modules/enrollment/enrollment.route.js";
 
 const createApp = (auth) => {
     const app = express();
@@ -26,6 +27,7 @@ const createApp = (auth) => {
     app.use("/api/reviews/", RveiewRoute);
     app.use("/api/contact", ContactRoute);
     app.use('/api/blogs', BlogRoutes);
+    app.use('/api/orders', EnrollmentRoutes);
 
     app.get("/", (req, res) => {
         res.send("M traders server is running successfully");
