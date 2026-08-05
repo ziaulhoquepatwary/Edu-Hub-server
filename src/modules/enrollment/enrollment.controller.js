@@ -38,7 +38,7 @@ export const createPendingOrder = catchAsync(async (req, res) => {
 });
 
 export const confirmPayment = catchAsync(async (req, res) => {
-    const { orderId, proofId, gateway } = req.body;
+    const { orderId, proofId, gateway, status } = req.body;
 
     if (!orderId || !proofId) {
         throw new AppError(400, "Missing required fields for enrollment confirmation");
@@ -60,14 +60,20 @@ export const confirmPayment = catchAsync(async (req, res) => {
 
     enrollment.proofId = proofId;
     if (gateway) enrollment.gateway = gateway;
-    enrollment.paymentStatus = 'SUCCESS';
-    enrollment.isAccessGranted = true;
+
+    if (status === 'FAILED') {
+        enrollment.paymentStatus = 'FAILED';
+        enrollment.isAccessGranted = false;
+    } else {
+        enrollment.paymentStatus = 'SUCCESS';
+        enrollment.isAccessGranted = true;
+    }
 
     await enrollment.save();
 
     return res.status(200).json({
         success: true,
-        message: "Payment proof saved and access granted successfully",
+        message: "Payment status updated successfully",
         data: enrollment,
     });
 });
