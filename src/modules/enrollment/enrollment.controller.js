@@ -3,11 +3,11 @@ import AppError from "../../utils/AppError.js";
 import catchAsync from "../../utils/catchAsync.js";
 import Enrollment from "./enrollment.model.js";
 
-export const confirmPayment = catchAsync(async (req, res) => {
-    const { orderId, courseId, userEmail, userName, proofId, gateway } = req.body;
+export const createPendingOrder = catchAsync(async (req, res) => {
+    const { orderId, courseId, userEmail, userName, gateway } = req.body;
 
-    if (!orderId || !courseId || !userEmail || !proofId) {
-        throw new AppError(400, "Missing required fields for enrollment confirmation");
+    if (!orderId || !courseId || !userEmail) {
+        throw new AppError(400, "Missing required fields to initialize order");
     }
 
     const existingEnrollment = await Enrollment.findOne({ orderId });
@@ -15,7 +15,7 @@ export const confirmPayment = catchAsync(async (req, res) => {
     if (existingEnrollment) {
         return res.status(200).json({
             success: true,
-            message: "Payment already processed and recorded",
+            message: "Order already initialized",
             data: existingEnrollment,
         });
     }
@@ -23,18 +23,52 @@ export const confirmPayment = catchAsync(async (req, res) => {
     const newEnrollment = await Enrollment.create({
         orderId,
         courseId,
-        userEmail: userEmail || "",
+        userEmail,
         userName: userName || 'Guest',
-        proofId,
         gateway: gateway || 'Antom',
-        paymentStatus: 'SUCCESS',
-        isAccessGranted: true
+        paymentStatus: 'PENDING',
+        isAccessGranted: false
     });
 
     return res.status(201).json({
         success: true,
-        message: "Payment proof saved successfully",
+        message: "Pending order created successfully",
         data: newEnrollment,
+    });
+});
+
+export const confirmPayment = catchAsync(async (req, res) => {
+    const { orderId, proofId, gateway } = req.body;
+
+    if (!orderId || !proofId) {
+        throw new AppError(400, "Missing required fields for enrollment confirmation");
+    }
+
+    const enrollment = await Enrollment.findOne({ orderId });
+
+    if (!enrollment) {
+        throw new AppError(404, "Order not found in database");
+    }
+
+    if (enrollment.paymentStatus === 'SUCCESS') {
+        return res.status(200).json({
+            success: true,
+            message: "Payment already processed and recorded",
+            data: enrollment,
+        });
+    }
+
+    enrollment.proofId = proofId;
+    if (gateway) enrollment.gateway = gateway;
+    enrollment.paymentStatus = 'SUCCESS';
+    enrollment.isAccessGranted = true;
+
+    await enrollment.save();
+
+    return res.status(200).json({
+        success: true,
+        message: "Payment proof saved and access granted successfully",
+        data: enrollment,
     });
 });
 
@@ -45,7 +79,8 @@ export const getMyEnrolledCourses = catchAsync(async (req, res) => {
         {
             $match: {
                 userEmail: userEmail,
-                paymentStatus: 'SUCCESS'
+                paymentStatus: 'SUCCESS',
+                isAccessGranted: true
             }
         },
         {
@@ -66,7 +101,6 @@ export const getMyEnrolledCourses = catchAsync(async (req, res) => {
         },
         {
             $project: {
-                // Enrollment Collection এর ফিল্ডসমূহ
                 _id: 1,
                 orderId: 1,
                 courseId: 1,
@@ -77,8 +111,6 @@ export const getMyEnrolledCourses = catchAsync(async (req, res) => {
                 paymentStatus: 1,
                 isAccessGranted: 1,
                 createdAt: 1,
-
-                // Course Collection এর নির্দিষ্ট ফিল্ডসমূহ
                 "courseDetails._id": 1,
                 "courseDetails.title": 1,
                 "courseDetails.category": 1,

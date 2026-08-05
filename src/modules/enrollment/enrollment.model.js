@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
 const enrollmentSchema = new mongoose.Schema(
     {
@@ -21,7 +21,7 @@ const enrollmentSchema = new mongoose.Schema(
         },
         proofId: {
             type: String,
-            required: true
+            default: ''
         },
         gateway: {
             type: String,
@@ -29,11 +29,12 @@ const enrollmentSchema = new mongoose.Schema(
         },
         paymentStatus: {
             type: String,
-            default: 'SUCCESS'
+            enum: ['PENDING', 'SUCCESS', 'FAILED'],
+            default: 'PENDING'
         },
         isAccessGranted: {
             type: Boolean,
-            default: true
+            default: false
         }
     },
     {
