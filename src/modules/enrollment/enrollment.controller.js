@@ -4,7 +4,7 @@ import catchAsync from "../../utils/catchAsync.js";
 import Enrollment from "./enrollment.model.js";
 
 export const createPendingOrder = catchAsync(async (req, res) => {
-    const { orderId, courseId, userEmail, userName, gateway } = req.body;
+    const { orderId, courseId, userEmail, userName, gateway, amount } = req.body;
 
     if (!orderId || !courseId || !userEmail) {
         throw new AppError(400, "Missing required fields to initialize order");
@@ -26,6 +26,7 @@ export const createPendingOrder = catchAsync(async (req, res) => {
         userEmail,
         userName: userName || 'Guest',
         gateway: gateway || 'Antom',
+        amount,
         paymentStatus: 'PENDING',
         isAccessGranted: false
     });
@@ -144,5 +145,82 @@ export const getMyEnrolledCourses = catchAsync(async (req, res) => {
         success: true,
         message: "Enrolled courses retrieved successfully",
         data: enrolledCourses,
+    });
+});
+
+export const getAllEnrollmentsForAdmin = catchAsync(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchQuery = req.query.search || '';
+    const status = req.query.status || 'ALL';
+
+    const skip = (page - 1) * limit;
+    const matchStage = {};
+
+    if (searchQuery) {
+        matchStage.proofId = { $regex: searchQuery, $options: 'i' };
+    }
+
+    if (status !== 'ALL') {
+        matchStage.paymentStatus = status;
+    }
+
+    const result = await Enrollment.aggregate([
+        { $match: matchStage },
+        {
+            $addFields: {
+                courseObjectId: { $toObjectId: "$courseId" }
+            }
+        },
+        {
+            $lookup: {
+                from: "courses",
+                localField: "courseObjectId",
+                foreignField: "_id",
+                as: "courseDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$courseDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                orderId: 1,
+                userEmail: 1,
+                userName: 1,
+                proofId: 1,
+                gateway: 1,
+                amount: 1,
+                paymentStatus: 1,
+                isAccessGranted: 1,
+                createdAt: 1,
+                "courseDetails.title": 1,
+                "courseDetails.image": 1,
+                "courseDetails.category": 1
+            }
+        },
+        { $sort: { createdAt: -1 } },
+        {
+            $facet: {
+                metadata: [{ $count: "totalDocuments" }],
+                data: [{ $skip: skip }, { $limit: limit }]
+            }
+        }
+    ]);
+
+    const total = result[0]?.metadata[0]?.totalDocuments || 0;
+    const enrollments = result[0]?.data || [];
+
+    res.status(200).json({
+        success: true,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        data: enrollments
     });
 });

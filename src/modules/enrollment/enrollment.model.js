@@ -27,6 +27,10 @@ const enrollmentSchema = new mongoose.Schema(
             type: String,
             default: 'Antom'
         },
+        amount: {
+            type: Number,
+            required: true
+        },
         paymentStatus: {
             type: String,
             enum: ['PENDING', 'SUCCESS', 'FAILED'],
